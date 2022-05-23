@@ -38,8 +38,11 @@ func (c *Cache) Put(key, value string) {
 func (c *Cache) CheckExpired(key string) bool {
 	if _, ok := (*c).deadlines[key]; ok {
 		fmt.Println((*c).deadlines[key].Sub(time.Now()))
-		delete((*c).deadlines, key)
-		return true
+		exp := (*c).deadlines[key].Sub(time.Now())
+		if exp <= time.Second*0 {
+			delete((*c).deadlines, key)
+			return true
+		}
 	}
 	return false
 }
