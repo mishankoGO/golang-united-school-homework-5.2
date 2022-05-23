@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -31,18 +30,22 @@ func (c Cache) Get(key string) (string, bool) {
 }
 
 func (c *Cache) Put(key, value string) {
-	(*c).vars[key] = value
-	(*c).varsInitTime[key] = time.Now()
+	c.vars[key] = value
+	c.varsInitTime[key] = time.Now()
+}
+
+func (c *Cache) DeleteExpired(key string) {
+	delete(c.deadlines, key)
+	delete(c.vars, key)
+	delete(c.varsInitTime, key)
 }
 
 func (c *Cache) CheckExpired(key string) bool {
-	if _, ok := (*c).deadlines[key]; ok {
-		fmt.Println((*c).deadlines[key].Sub(time.Now()))
-		exp := (*c).deadlines[key].Sub(time.Now())
+	if _, ok := c.deadlines[key]; ok {
+		//fmt.Println((*c).deadlines[key].Sub(time.Now()))
+		exp := c.deadlines[key].Sub(time.Now())
 		if exp <= time.Second*0 {
-			delete((*c).deadlines, key)
-			delete((*c).vars, key)
-			delete((*c).varsInitTime, key)
+			c.DeleteExpired(key)
 			return true
 		}
 	}
@@ -51,18 +54,17 @@ func (c *Cache) CheckExpired(key string) bool {
 
 func (c Cache) Keys() []string {
 	var keys []string
-	fmt.Println(c.vars)
-	for k, _ := range c.vars {
+	for k := range c.vars {
 		if !c.CheckExpired(k) {
 			keys = append(keys, k)
 		}
 	}
-	fmt.Println(keys)
+	//fmt.Println(keys)
 	return keys
 }
 
 func (c *Cache) PutTill(key, value string, deadline time.Time) {
-	(*c).vars[key] = value
-	(*c).deadlines[key] = deadline
-	(*c).varsInitTime[key] = time.Now()
+	c.vars[key] = value
+	c.deadlines[key] = deadline
+	c.varsInitTime[key] = time.Now()
 }
