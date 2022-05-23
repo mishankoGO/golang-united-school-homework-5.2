@@ -6,16 +6,18 @@ import (
 )
 
 type Cache struct {
-	vars      map[string]string
-	deadlines map[string]time.Time
+	vars         map[string]string
+	deadlines    map[string]time.Time
+	varsInitTime map[string]time.Time
 }
 
 func NewCache() Cache {
 
 	vars := make(map[string]string)
+	varsInitTime := make(map[string]time.Time)
 	deadlines := make(map[string]time.Time)
 
-	return Cache{vars, deadlines}
+	return Cache{vars, varsInitTime, deadlines}
 }
 
 func (c Cache) Get(key string) (string, bool) {
@@ -30,10 +32,12 @@ func (c Cache) Get(key string) (string, bool) {
 
 func (c *Cache) Put(key, value string) {
 	c.vars[key] = value
+	c.varsInitTime[key] = time.Now()
 }
 
 func (c *Cache) CheckExpired(key string) bool {
-	if _, ok := c.deadlines[key]; c.deadlines[key].Sub(time.Now()) <= time.Second*0 && ok {
+	fmt.Println(c.deadlines[key].Sub(time.Now()))
+	if _, ok := c.deadlines[key]; c.deadlines[key].Sub(c.varsInitTime[key]) <= time.Second*0 && ok {
 		delete(c.deadlines, key)
 		return true
 	}
@@ -44,11 +48,9 @@ func (c Cache) Keys() []string {
 	var keys []string
 	fmt.Println(c.vars)
 	for k, _ := range c.vars {
-		if (&c).CheckExpired(k) {
-			delete(c.deadlines, k)
-			continue
+		if !(&c).CheckExpired(k) {
+			keys = append(keys, k)
 		}
-		keys = append(keys, k)
 	}
 	fmt.Println(keys)
 	return keys
@@ -57,4 +59,5 @@ func (c Cache) Keys() []string {
 func (c *Cache) PutTill(key, value string, deadline time.Time) {
 	c.vars[key] = value
 	c.deadlines[key] = deadline
+	c.varsInitTime[key] = time.Now()
 }
