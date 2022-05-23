@@ -22,7 +22,7 @@ func NewCache() Cache {
 
 func (c Cache) Get(key string) (string, bool) {
 	if val, ok := c.vars[key]; ok {
-		if (&c).CheckExpired(key) {
+		if c.CheckExpired(key) {
 			return "", false
 		}
 		return val, ok
@@ -51,7 +51,7 @@ func (c Cache) Keys() []string {
 	var keys []string
 	fmt.Println(c.vars)
 	for k, _ := range c.vars {
-		if !(&c).CheckExpired(k) {
+		if !c.CheckExpired(k) {
 			keys = append(keys, k)
 		}
 	}
