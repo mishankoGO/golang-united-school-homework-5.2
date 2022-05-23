@@ -42,7 +42,6 @@ func (c *Cache) DeleteExpired(key string) {
 
 func (c *Cache) CheckExpired(key string) bool {
 	if _, ok := c.deadlines[key]; ok {
-		//fmt.Println((*c).deadlines[key].Sub(time.Now()))
 		exp := c.deadlines[key].Sub(time.Now())
 		if exp <= time.Second*0 {
 			c.DeleteExpired(key)
@@ -59,7 +58,6 @@ func (c Cache) Keys() []string {
 			keys = append(keys, k)
 		}
 	}
-	//fmt.Println(keys)
 	return keys
 }
 
