@@ -15,7 +15,7 @@ func NewCache() Cache {
 	return Cache{vars, deadlines}
 }
 
-func (c *Cache) Get(key string) (string, bool) {
+func (c Cache) Get(key string) (string, bool) {
 	if val, ok := c.vars[key]; ok {
 		if _, ok := c.deadlines[key]; c.deadlines[key].Sub(time.Now()) <= time.Second*0 && ok {
 			delete(c.deadlines, key)
@@ -32,7 +32,12 @@ func (c *Cache) Put(key, value string) {
 
 func (c Cache) Keys() []string {
 	var keys []string
+
 	for k, _ := range c.vars {
+		if _, ok := c.deadlines[k]; c.deadlines[k].Sub(time.Now()) <= time.Second*0 && ok {
+			delete(c.deadlines, k)
+			continue
+		}
 		keys = append(keys, k)
 	}
 	return keys
