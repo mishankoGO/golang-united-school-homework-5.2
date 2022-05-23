@@ -1,6 +1,9 @@
 package cache
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type Cache struct {
 	vars      map[string]string
@@ -17,8 +20,7 @@ func NewCache() Cache {
 
 func (c Cache) Get(key string) (string, bool) {
 	if val, ok := c.vars[key]; ok {
-		if _, ok := c.deadlines[key]; c.deadlines[key].Sub(time.Now()) <= time.Second*0 && ok {
-			delete(c.deadlines, key)
+		if (&c).CheckExpired(key) {
 			return "", false
 		}
 		return val, ok
@@ -30,16 +32,25 @@ func (c *Cache) Put(key, value string) {
 	c.vars[key] = value
 }
 
+func (c *Cache) CheckExpired(key string) bool {
+	if _, ok := c.deadlines[key]; c.deadlines[key].Sub(time.Now()) <= time.Second*0 && ok {
+		delete(c.deadlines, key)
+		return true
+	}
+	return false
+}
+
 func (c Cache) Keys() []string {
 	var keys []string
-
+	fmt.Println(c.vars)
 	for k, _ := range c.vars {
-		if _, ok := c.deadlines[k]; c.deadlines[k].Sub(time.Now()) <= time.Second*0 && ok {
+		if (&c).CheckExpired(k) {
 			delete(c.deadlines, k)
 			continue
 		}
 		keys = append(keys, k)
 	}
+	fmt.Println(keys)
 	return keys
 }
 
