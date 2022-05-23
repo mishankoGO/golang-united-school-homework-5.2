@@ -31,8 +31,8 @@ func (c Cache) Get(key string) (string, bool) {
 }
 
 func (c *Cache) Put(key, value string) {
-	c.vars[key] = value
-	c.varsInitTime[key] = time.Now()
+	(*c).vars[key] = value
+	(*c).varsInitTime[key] = time.Now()
 }
 
 func (c *Cache) CheckExpired(key string) bool {
@@ -41,6 +41,8 @@ func (c *Cache) CheckExpired(key string) bool {
 		exp := (*c).deadlines[key].Sub(time.Now())
 		if exp <= time.Second*0 {
 			delete((*c).deadlines, key)
+			delete((*c).vars, key)
+			delete((*c).varsInitTime, key)
 			return true
 		}
 	}
@@ -60,7 +62,7 @@ func (c Cache) Keys() []string {
 }
 
 func (c *Cache) PutTill(key, value string, deadline time.Time) {
-	c.vars[key] = value
-	c.deadlines[key] = deadline
-	c.varsInitTime[key] = time.Now()
+	(*c).vars[key] = value
+	(*c).deadlines[key] = deadline
+	(*c).varsInitTime[key] = time.Now()
 }
